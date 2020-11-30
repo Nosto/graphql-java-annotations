@@ -12,6 +12,19 @@
  */
 package graphql.annotations;
 
+import static graphql.annotations.AnnotationsSchemaCreator.newAnnotationsSchema;
+import static graphql.schema.GraphQLSchema.newSchema;
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertTrue;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
+import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.Test;
+
 import graphql.ExecutionResult;
 import graphql.GraphQL;
 import graphql.TypeResolutionEnvironment;
@@ -20,18 +33,11 @@ import graphql.annotations.annotationTypes.GraphQLName;
 import graphql.annotations.annotationTypes.GraphQLTypeResolver;
 import graphql.annotations.processor.GraphQLAnnotations;
 import graphql.annotations.processor.exceptions.GraphQLAnnotationsException;
-import graphql.schema.*;
-import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Test;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import static graphql.annotations.AnnotationsSchemaCreator.newAnnotationsSchema;
-import static graphql.schema.GraphQLSchema.newSchema;
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertTrue;
+import graphql.schema.GraphQLInputObjectType;
+import graphql.schema.GraphQLNamedType;
+import graphql.schema.GraphQLObjectType;
+import graphql.schema.GraphQLSchema;
+import graphql.schema.TypeResolver;
 
 @SuppressWarnings("unchecked")
 public class GraphQLInputTest {
@@ -123,6 +129,21 @@ public class GraphQLInputTest {
         }
     }
 
+    @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
+    public static class AnotherCode {
+
+        public AnotherCode(@GraphQLName("firstField") Optional<String> one, @GraphQLName("secondField") String two) {
+            this.firstField = one;
+            this.secondField = two;
+        }
+
+        @GraphQLField
+        public Optional<String> firstField;
+
+        @GraphQLField
+        private final String secondField;
+    }
+
     public static class Code {
         public Code(@GraphQLName("map") HashMap map) {
             this.firstField = (String) map.get("firstField");
@@ -133,6 +154,21 @@ public class GraphQLInputTest {
         public String firstField;
         @GraphQLField
         public String secondField;
+    }
+
+    public static class QueryUndefinedParameter {
+
+        @SuppressWarnings({"unused", "OptionalAssignedToNull"})
+        @GraphQLField
+        public String something(@GraphQLName("code") AnotherCode code) {
+            return (code.firstField != null ? code.firstField.orElse("") : "") + code.secondField;
+        }
+
+        @SuppressWarnings({"unused", "OptionalAssignedToNull"})
+        @GraphQLField
+        public String otherthing(@GraphQLName("code") AnotherCode code) {
+            return (code.firstField != null ? code.firstField.orElse("") : "") + code.secondField;
+        }
     }
 
     public static class QueryMultipleDefinitions {
@@ -189,6 +225,17 @@ public class GraphQLInputTest {
         ExecutionResult result = graphQL.execute("{ object { value(input:{key:\"test\"}) } }", new Query());
         assertTrue(result.getErrors().isEmpty());
         assertEquals(((Map<String, Map<String, String>>) result.getData()).get("object").get("value"), "testa");
+    }
+
+    @Test
+    public void queryWithUndefinableParameters() {
+        GraphQLSchema schema = newAnnotationsSchema().query(QueryUndefinedParameter.class).build();
+
+        GraphQL graphQL = GraphQL.newGraphQL(schema).build();
+        ExecutionResult result = graphQL.execute("{ something(code: {firstField:\"a\",secondField:\"b\"}) otherthing(code: {secondField:\"c\"})  }", new QueryUndefinedParameter());
+        assertTrue(result.getErrors().isEmpty());
+        assertEquals(((Map<String, String>) result.getData()).get("something"), "ab");
+        assertEquals(((Map<String, String>) result.getData()).get("otherthing"), "c");
     }
 
     @Test

@@ -131,6 +131,7 @@ public class MethodDataFetcher<T> implements DataFetcher<T> {
         return result.toArray();
     }
 
+    @SuppressWarnings("ConstantConditions")
     private Object buildArg(Type p, GraphQLType graphQLType, Optional<Object> arg) {
         if (arg == null) {
             return null;
@@ -140,7 +141,7 @@ public class MethodDataFetcher<T> implements DataFetcher<T> {
         }
 
         if (p instanceof Class<?> && graphQLType instanceof GraphQLInputObjectType) {
-            Constructor<?> constructors[] = ((Class) p).getConstructors();
+            Constructor<?>[] constructors = ((Class) p).getConstructors();
             Constructor<?> constructor = getBuildArgConstructor(constructors);
             Parameter[] parameters = constructor.getParameters();
 
@@ -156,15 +157,23 @@ public class MethodDataFetcher<T> implements DataFetcher<T> {
                 return constructNewInstance(constructor, objects.toArray(new Object[objects.size()]));
             }
         } else if (p instanceof ParameterizedType && graphQLType instanceof GraphQLList) {
-            List<Object> list = new ArrayList<>();
-            Type subType = ((ParameterizedType) p).getActualTypeArguments()[0];
-            GraphQLType wrappedType = ((GraphQLList) graphQLType).getWrappedType();
+            if (((ParameterizedType) p).getRawType() == Optional.class) {
+                if (arg == null) {
+                    return null;
+                } else {
+                    Type subType = ((ParameterizedType) p).getActualTypeArguments()[0];
+                    return Optional.ofNullable(buildArg(subType, graphQLType, arg));
+                }
+            } else {
+                List<Object> list = new ArrayList<>();
+                Type subType = ((ParameterizedType) p).getActualTypeArguments()[0];
+                GraphQLType wrappedType = ((GraphQLList) graphQLType).getWrappedType();
 
-            for (Object item : ((List) arg.get())) {
-                list.add(buildArg(subType, wrappedType, Optional.ofNullable(item)));
+                for (Object item : ((List) arg.get())) {
+                    list.add(buildArg(subType, wrappedType, Optional.ofNullable(item)));
+                }
+                return list;
             }
-
-            return list;
         } else if (p instanceof ParameterizedType && ((ParameterizedType) p).getRawType() == Optional.class) {
             Type subType = ((ParameterizedType) p).getActualTypeArguments()[0];
             if (arg == null) {

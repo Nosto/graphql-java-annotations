@@ -169,6 +169,12 @@ public class GraphQLInputTest {
         public String otherthing(@GraphQLName("code") AnotherCode code) {
             return (code.firstField != null ? code.firstField.orElse("") : "") + code.secondField;
         }
+
+        @SuppressWarnings({"unused", "OptionalAssignedToNull", "OptionalUsedAsFieldOrParameterType"})
+        @GraphQLField
+        public String listthings(@GraphQLName("codes") Optional<List<AnotherCode>> code) {
+            return code == null ? "was null" : (code.map(anotherCodes -> "code was " + anotherCodes.size()).orElse("was empty"));
+        }
     }
 
     public static class QueryMultipleDefinitions {
@@ -232,10 +238,11 @@ public class GraphQLInputTest {
         GraphQLSchema schema = newAnnotationsSchema().query(QueryUndefinedParameter.class).build();
 
         GraphQL graphQL = GraphQL.newGraphQL(schema).build();
-        ExecutionResult result = graphQL.execute("{ something(code: {firstField:\"a\",secondField:\"b\"}) otherthing(code: {secondField:\"c\"})  }", new QueryUndefinedParameter());
+        ExecutionResult result = graphQL.execute("{ something(code: {firstField:\"a\",secondField:\"b\"}) otherthing(code: {secondField:\"c\"}) listthings  }", new QueryUndefinedParameter());
         assertTrue(result.getErrors().isEmpty());
         assertEquals(((Map<String, String>) result.getData()).get("something"), "ab");
         assertEquals(((Map<String, String>) result.getData()).get("otherthing"), "c");
+        assertEquals(((Map<String, String>) result.getData()).get("listthings"), "was null");
     }
 
     @Test

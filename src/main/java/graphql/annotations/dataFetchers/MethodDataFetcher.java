@@ -146,7 +146,7 @@ public class MethodDataFetcher<T> implements DataFetcher<T> {
             Constructor<?> constructor = getBuildArgConstructor(constructors);
             Parameter[] parameters = constructor.getParameters();
 
-            if (parameters.length == 1 && parameters[0].getType().isAssignableFrom((Class<?>) p)) {
+            if (parameters.length == 1 && arg.isPresent() && parameters[0].getType().isAssignableFrom(arg.get().getClass())) {
                 if (parameters[0].getType().isAssignableFrom(Optional.class)) {
                     return constructNewInstance(constructor, arg);
                 } else {

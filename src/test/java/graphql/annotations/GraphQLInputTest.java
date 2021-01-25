@@ -144,6 +144,17 @@ public class GraphQLInputTest {
         private final String secondField;
     }
 
+    @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
+    public static class AnotherCodeWithSingleField {
+
+        public AnotherCodeWithSingleField(@GraphQLName("one") Optional<String> one) {
+            this.field = one;
+        }
+
+        @GraphQLField
+        public Optional<String> field;
+    }
+
     public static class Code {
         public Code(@GraphQLName("map") HashMap map) {
             this.firstField = (String) map.get("firstField");
@@ -162,6 +173,12 @@ public class GraphQLInputTest {
         @GraphQLField
         public String something(@GraphQLName("code") AnotherCode code) {
             return (code.firstField != null ? code.firstField.orElse("") : "") + code.secondField;
+        }
+
+        @SuppressWarnings({"unused", "OptionalAssignedToNull"})
+        @GraphQLField
+        public String somethingWithOneField(@GraphQLName("code") AnotherCodeWithSingleField code) {
+            return code.field != null ? code.field.orElse("") : "was undefined";
         }
 
         @SuppressWarnings({"unused", "OptionalAssignedToNull"})
@@ -238,11 +255,12 @@ public class GraphQLInputTest {
         GraphQLSchema schema = newAnnotationsSchema().query(QueryUndefinedParameter.class).build();
 
         GraphQL graphQL = GraphQL.newGraphQL(schema).build();
-        ExecutionResult result = graphQL.execute("{ something(code: {firstField:\"a\",secondField:\"b\"}) otherthing(code: {secondField:\"c\"}) listthings  }", new QueryUndefinedParameter());
+        ExecutionResult result = graphQL.execute("{ something(code: {firstField:\"a\",secondField:\"b\"}) otherthing(code: {secondField:\"c\"}) listthings somethingWithOneField(code: {}) }", new QueryUndefinedParameter());
         assertTrue(result.getErrors().isEmpty());
         assertEquals(((Map<String, String>) result.getData()).get("something"), "ab");
         assertEquals(((Map<String, String>) result.getData()).get("otherthing"), "c");
         assertEquals(((Map<String, String>) result.getData()).get("listthings"), "was null");
+        assertEquals(((Map<String, String>) result.getData()).get("somethingWithOneField"), "was undefined");
     }
 
     @Test

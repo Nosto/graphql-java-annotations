@@ -48,6 +48,8 @@ import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
 import static graphql.schema.GraphQLSchema.newSchema;
 import static org.testng.Assert.*;
 
+import com.google.common.collect.ImmutableList;
+
 @SuppressWarnings("unchecked")
 public class GraphQLObjectTest {
 
@@ -275,7 +277,7 @@ public class GraphQLObjectTest {
         List<GraphQLFieldDefinition> fields = object.getFieldDefinitions();
         assertEquals(fields.size(), 8);
 
-        fields.sort((o1, o2) -> o1.getName().compareTo(o2.getName()));
+        fields = ImmutableList.sortedCopyOf((o1, o2) -> o1.getName().compareTo(o2.getName()), fields);
 
         assertEquals(fields.get(2).getName(), "field0");
         assertEquals(fields.get(2).getDescription(), "field");
@@ -407,7 +409,7 @@ public class GraphQLObjectTest {
         GraphQLObjectType object = this.graphQLAnnotations.object(TestAccessors.class);
         List<GraphQLFieldDefinition> fields = object.getFieldDefinitions();
         assertEquals(fields.size(), 2);
-        fields.sort(Comparator.comparing(GraphQLFieldDefinition::getName));
+        fields = ImmutableList.sortedCopyOf(Comparator.comparing(GraphQLFieldDefinition::getName), fields);
 
         assertEquals(fields.get(0).getName(), "getValue");
         assertEquals(fields.get(1).getName(), "setAnotherValue");

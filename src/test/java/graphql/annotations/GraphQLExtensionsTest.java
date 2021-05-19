@@ -31,6 +31,8 @@ import static graphql.Scalars.GraphQLString;
 import static graphql.annotations.AnnotationsSchemaCreator.newAnnotationsSchema;
 import static org.testng.Assert.*;
 
+import com.google.common.collect.ImmutableList;
+
 public class GraphQLExtensionsTest {
 
     @GraphQLDescription("TestObject object")
@@ -103,7 +105,7 @@ public class GraphQLExtensionsTest {
         List<GraphQLFieldDefinition> fields = object.getFieldDefinitions();
         assertEquals(fields.size(), 5);
 
-        fields.sort(Comparator.comparing(GraphQLFieldDefinition::getName));
+        fields = ImmutableList.sortedCopyOf(Comparator.comparing(GraphQLFieldDefinition::getName), fields);
 
         assertEquals(fields.get(0).getName(), "field");
         assertEquals(fields.get(1).getName(), "field2");

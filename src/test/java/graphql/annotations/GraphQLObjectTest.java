@@ -49,8 +49,6 @@ import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
 import static graphql.schema.GraphQLSchema.newSchema;
 import static org.testng.Assert.*;
 
-import com.google.common.collect.ImmutableList;
-
 @SuppressWarnings("unchecked")
 public class GraphQLObjectTest {
 

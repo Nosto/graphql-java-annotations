@@ -32,8 +32,6 @@ import static graphql.Scalars.GraphQLString;
 import static graphql.annotations.AnnotationsSchemaCreator.newAnnotationsSchema;
 import static org.testng.Assert.*;
 
-import com.google.common.collect.ImmutableList;
-
 public class GraphQLExtensionsTest {
 
     @GraphQLDescription("TestObject object")

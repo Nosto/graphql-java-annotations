@@ -20,6 +20,7 @@ import graphql.annotations.annotationTypes.*;
 import graphql.annotations.processor.GraphQLAnnotations;
 import graphql.annotations.processor.exceptions.GraphQLAnnotationsException;
 import graphql.annotations.processor.retrievers.GraphQLObjectHandler;
+import graphql.com.google.common.collect.ImmutableList;
 import graphql.schema.*;
 import org.testng.annotations.Test;
 

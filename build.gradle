@@ -2,28 +2,26 @@ import aQute.bnd.gradle.Bundle
 
 buildscript {
     repositories {
-        jcenter()
         mavenCentral()
     }
     dependencies {
         classpath 'biz.aQute.bnd:biz.aQute.bnd.gradle:5.1.2'
+        classpath "org.jfrog.buildinfo:build-info-extractor-gradle:latest.release"
     }
 }
 plugins {
-    id 'com.jfrog.bintray' version '1.8.5'
     id 'net.researchgate.release' version '2.8.1'
     id 'com.github.hierynomus.license' version '0.15.0'
+    id 'maven-publish'
+    id 'signing'
+    id "io.github.gradle-nexus.publish-plugin" version "1.0.0"
 }
 
 apply plugin: 'java'
 apply plugin: 'idea'
-
 apply plugin: 'biz.aQute.bnd.builder'
-apply plugin: 'com.jfrog.bintray'
 apply plugin: 'maven-publish'
 
-//def releaseVersion = System.properties.RELEASE_VERSION
-//version = releaseVersion ? releaseVersion : new SimpleDateFormat('yyyy-MM-dd\'T\'HH-mm-ss').format(new Date())
 
 // custom tasks for creating source/javadoc jars
 task sourcesJar(type: Jar, dependsOn: classes) {
@@ -56,7 +54,8 @@ gradle.projectsEvaluated {
 
 dependencies {
     compile 'javax.validation:validation-api:1.1.0.Final'
-    compile 'com.graphql-java:graphql-java:16.2'
+    compile 'com.graphql-java:graphql-java:17.2'
+    compile 'com.graphql-java:graphql-java-extended-scalars:17.0'
     implementation "jakarta.xml.bind:jakarta.xml.bind-api:2.3.2"
     implementation "org.glassfish.jaxb:jaxb-runtime:2.3.2"
 
@@ -144,34 +143,22 @@ publishing {
     }
 }
 
-afterReleaseBuild.dependsOn bintrayUpload
+afterReleaseBuild.dependsOn nexusPublishing
 
-bintray {
-    user = System.getenv('BINTRAY_USER') ?: project.findProperty('BINTRAY_USER') ?: ''
-    key = System.getenv('BINTRAY_KEY') ?: project.findProperty('BINTRAY_KEY') ?: ''
-    publications = ['maven']
-    publish = true
-    pkg {
-        desc = 'This library offers an annotations-based syntax for GraphQL schema definition.'
-        repo = 'graphql-java-annotations'
-        name = 'graphql-java-annotations'
-        licenses = ['Apache-2.0']
-        vcsUrl = 'https://github.com/graphql-java/graphql-java-annotations'
-        version {
-            name = project.version
-            released = new Date()
-            gpg {
-                sign = false
-            }
-            mavenCentralSync {
-                sync = true //[Default: true] Determines whether to sync the version to Maven Central..
-                user = System.getenv('OSS_USER') ?: project.findProperty('OSS_USER') ?: ''
-                password = System.getenv('OSS_PASS') ?: project.findProperty('OSS_PASS') ?: ''
-                close = '1'
-                //Optional property. By default the staging repository is closed and artifacts are released to Maven Central. You can optionally turn this behaviour off (by puting 0 as value) and release the version manually.
-            }
+nexusPublishing {
+    repositories {
+        sonatype {
+            username = System.getenv("MAVEN_CENTRAL_USER")
+            password = System.getenv("MAVEN_CENTRAL_PASSWORD")
         }
     }
+}
+
+// to publish to local maven repo skip signing: ./gradlew publishToMavenLocal  -x signGraphqlJavaPublication
+signing {
+    def signingKey = System.getenv("MAVEN_CENTRAL_PGP_KEY")
+    useInMemoryPgpKeys(signingKey, "")
+    sign publishing.publications
 }
 
 task bundle(type: Bundle) {

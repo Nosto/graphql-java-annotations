@@ -33,7 +33,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import graphql.annotations.annotationTypes.GraphQLBatched;
 import graphql.annotations.annotationTypes.GraphQLConstructor;
 import graphql.annotations.annotationTypes.GraphQLInvokeDetached;
 import graphql.annotations.annotationTypes.GraphQLName;
@@ -82,7 +81,7 @@ public class MethodDataFetcher<T> implements DataFetcher<T> {
             T obj;
             if (Modifier.isStatic(method.getModifiers())) {
                 return (T) method.invoke(null, invocationArgs(environment, container));
-            } else if (method.isAnnotationPresent(GraphQLBatched.class) || method.isAnnotationPresent(GraphQLInvokeDetached.class)) {
+            } else if (method.isAnnotationPresent(GraphQLInvokeDetached.class)) {
                 obj = newInstance((Class<T>) method.getDeclaringClass());
             } else if (!method.getDeclaringClass().isInstance(environment.getSource())) {
                 obj = newInstance((Class<T>) method.getDeclaringClass(), environment.getSource());

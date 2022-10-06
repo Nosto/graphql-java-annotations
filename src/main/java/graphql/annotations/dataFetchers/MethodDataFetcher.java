@@ -134,7 +134,7 @@ public class MethodDataFetcher<T> implements DataFetcher<T> {
     @SuppressWarnings("ConstantConditions")
     private Object buildArg(Type p, GraphQLType graphQLType, Object arg) {
         Optional<Object> optionalArg = Optional.ofNullable(arg);
-        if (optionalArg.isEmpty()) {
+        if (!optionalArg.isPresent()) {
             return null;
         }
         if (graphQLType instanceof graphql.schema.GraphQLNonNull) {
@@ -167,7 +167,7 @@ public class MethodDataFetcher<T> implements DataFetcher<T> {
             }
         } else if (p instanceof ParameterizedType && graphQLType instanceof GraphQLList) {
             if (((ParameterizedType) p).getRawType() == Optional.class) {
-                if (optionalArg.isEmpty()) {
+                if (!optionalArg.isPresent()) {
                     return null;
                 } else {
                     Type subType = ((ParameterizedType) p).getActualTypeArguments()[0];

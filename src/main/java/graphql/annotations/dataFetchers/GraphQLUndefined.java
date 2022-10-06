@@ -12,6 +12,7 @@
  */
 package graphql.annotations.dataFetchers;
 
+import graphql.schema.GraphQLList;
 import graphql.schema.GraphQLSchemaElement;
 import graphql.schema.GraphQLType;
 import graphql.schema.GraphQLTypeVisitor;
@@ -44,6 +45,6 @@ public class GraphQLUndefined implements GraphQLType {
 
     @Override
     public GraphQLSchemaElement copy() {
-        return null;
+        return new GraphQLUndefined();
     }
 }

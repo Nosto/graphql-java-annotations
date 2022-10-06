@@ -22,6 +22,16 @@ apply plugin: 'idea'
 apply plugin: 'biz.aQute.bnd.builder'
 apply plugin: 'maven-publish'
 
+task customFatJar(type: Jar) {
+    manifest {
+        attributes 'Main-Class': 'com.baeldung.fatjar.Application'
+    }
+    baseName = 'all-in-one-jar'
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    from { configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
+    with jar
+}
+
 
 // custom tasks for creating source/javadoc jars
 task sourcesJar(type: Jar, dependsOn: classes) {
@@ -32,6 +42,10 @@ task sourcesJar(type: Jar, dependsOn: classes) {
 task javadocJar(type: Jar, dependsOn: javadoc) {
     classifier = 'javadoc'
     from javadoc.destinationDir
+}
+
+build {
+    dependsOn customFatJar
 }
 
 release {
@@ -54,11 +68,9 @@ gradle.projectsEvaluated {
 
 dependencies {
     compile 'javax.validation:validation-api:1.1.0.Final'
-    compile 'com.graphql-java:graphql-java:17.2'
+    compile 'com.graphql-java:graphql-java:17.4'
     compile 'com.graphql-java:graphql-java-extended-scalars:17.0'
-    implementation "jakarta.xml.bind:jakarta.xml.bind-api:2.3.2"
-    implementation "org.glassfish.jaxb:jaxb-runtime:2.3.2"
-
+    implementation 'jakarta.xml.bind:jakarta.xml.bind-api:4.0.0'
 
     // OSGi
     compileOnly 'org.osgi:org.osgi.core:6.0.0'

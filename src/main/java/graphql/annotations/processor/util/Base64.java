@@ -14,7 +14,8 @@
  */
 package graphql.annotations.processor.util;
 
-import javax.xml.bind.DatatypeConverter;
+import jakarta.xml.bind.DatatypeConverter;
+
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 

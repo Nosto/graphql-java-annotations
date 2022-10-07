@@ -28,6 +28,7 @@ import graphql.annotations.processor.searchAlgorithms.ParentalSearch;
 import graphql.annotations.processor.typeBuilders.InputObjectBuilder;
 import graphql.annotations.processor.typeFunctions.TypeFunction;
 import graphql.annotations.processor.util.CodeRegistryUtil;
+import graphql.com.google.common.collect.ImmutableList;
 import graphql.schema.*;
 import graphql.schema.GraphQLType;
 import graphql.schema.idl.SchemaParser;
@@ -47,8 +48,6 @@ import static graphql.annotations.processor.util.InputPropertiesUtil.DEFAULT_INP
 import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
 import static graphql.schema.GraphQLSchema.newSchema;
 import static org.testng.Assert.*;
-
-import com.google.common.collect.ImmutableList;
 
 @SuppressWarnings("unchecked")
 public class GraphQLObjectTest {
@@ -353,15 +352,15 @@ public class GraphQLObjectTest {
         }
     }
 
-    public static class TestObjectBridgMethod extends TestObjectBridgMethodParent<Long> {
+    public static class TestObjectBridgMethod extends TestObjectBridgMethodParent<String> {
 
         public TestObjectBridgMethod() {
-            super(1L);
+            super("1");
         }
 
         @Override
         @GraphQLField
-        public Long id() {
+        public String id() {
             return super.id();
         }
     }
@@ -371,7 +370,7 @@ public class GraphQLObjectTest {
         GraphQLSchema schema = newAnnotationsSchema().query(TestObjectBridgMethod.class).build();
 
         ExecutionResult result = GraphQL.newGraphQL(schema).build().execute("{id}", new TestObjectBridgMethod());
-        assertEquals(((Map<String, Object>) result.getData()).get("id"), 1L);
+        assertEquals(((Map<String, Object>) result.getData()).get("id"), "1");
     }
 
     public interface Iface {

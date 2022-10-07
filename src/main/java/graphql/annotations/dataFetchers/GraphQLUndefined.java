@@ -12,15 +12,39 @@
  */
 package graphql.annotations.dataFetchers;
 
+import graphql.schema.GraphQLList;
 import graphql.schema.GraphQLSchemaElement;
 import graphql.schema.GraphQLType;
 import graphql.schema.GraphQLTypeVisitor;
+import graphql.schema.SchemaElementChildrenContainer;
 import graphql.util.TraversalControl;
 import graphql.util.TraverserContext;
 
+import java.util.List;
+
 public class GraphQLUndefined implements GraphQLType {
+    @Override
+    public List<GraphQLSchemaElement> getChildren() {
+        return GraphQLType.super.getChildren();
+    }
+
+    @Override
+    public SchemaElementChildrenContainer getChildrenWithTypeReferences() {
+        return GraphQLType.super.getChildrenWithTypeReferences();
+    }
+
+    @Override
+    public GraphQLSchemaElement withNewChildren(SchemaElementChildrenContainer newChildren) {
+        return GraphQLType.super.withNewChildren(newChildren);
+    }
+
     @Override
     public TraversalControl accept(TraverserContext<GraphQLSchemaElement> context, GraphQLTypeVisitor visitor) {
         return null;
+    }
+
+    @Override
+    public GraphQLSchemaElement copy() {
+        return new GraphQLUndefined();
     }
 }

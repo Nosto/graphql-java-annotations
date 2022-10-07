@@ -33,7 +33,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import graphql.annotations.annotationTypes.GraphQLBatched;
 import graphql.annotations.annotationTypes.GraphQLConstructor;
 import graphql.annotations.annotationTypes.GraphQLInvokeDetached;
 import graphql.annotations.annotationTypes.GraphQLName;
@@ -82,7 +81,7 @@ public class MethodDataFetcher<T> implements DataFetcher<T> {
             T obj;
             if (Modifier.isStatic(method.getModifiers())) {
                 return (T) method.invoke(null, invocationArgs(environment, container));
-            } else if (method.isAnnotationPresent(GraphQLBatched.class) || method.isAnnotationPresent(GraphQLInvokeDetached.class)) {
+            } else if (method.isAnnotationPresent(GraphQLInvokeDetached.class)) {
                 obj = newInstance((Class<T>) method.getDeclaringClass());
             } else if (!method.getDeclaringClass().isInstance(environment.getSource())) {
                 obj = newInstance((Class<T>) method.getDeclaringClass(), environment.getSource());
@@ -124,7 +123,7 @@ public class MethodDataFetcher<T> implements DataFetcher<T> {
 
             graphql.schema.GraphQLType graphQLType = typeFunction.buildType(true, paramType, p.getAnnotatedType(), container);
             if (envArgs.containsKey(parameterName)) {
-                result.add(buildArg(p.getParameterizedType(), graphQLType, envArgs.containsKey(parameterName) ? Optional.ofNullable(envArgs.get(parameterName)) : null));
+                result.add(buildArg(p.getParameterizedType(), graphQLType, envArgs.get(parameterName)));
             } else {
                 result.add(null);
             }
@@ -133,8 +132,9 @@ public class MethodDataFetcher<T> implements DataFetcher<T> {
     }
 
     @SuppressWarnings("ConstantConditions")
-    private Object buildArg(Type p, GraphQLType graphQLType, Optional<Object> arg) {
-        if (arg == null) {
+    private Object buildArg(Type p, GraphQLType graphQLType, Object arg) {
+        Optional<Object> optionalArg = Optional.ofNullable(arg);
+        if (!optionalArg.isPresent()) {
             return null;
         }
         if (graphQLType instanceof graphql.schema.GraphQLNonNull) {
@@ -146,28 +146,28 @@ public class MethodDataFetcher<T> implements DataFetcher<T> {
             Constructor<?> constructor = getBuildArgConstructor(constructors);
             Parameter[] parameters = constructor.getParameters();
 
-            if (parameters.length == 1 && arg.isPresent() && parameters[0].getType().isAssignableFrom(arg.get().getClass())) {
+            if (parameters.length == 1 && optionalArg.isPresent() && parameters[0].getType().isAssignableFrom(optionalArg.get().getClass())) {
                 if (parameters[0].getType().isAssignableFrom(Optional.class)) {
                     return constructNewInstance(constructor, arg);
                 } else {
-                    return constructNewInstance(constructor, arg.orElse(null));
+                    return constructNewInstance(constructor, optionalArg.orElse(null));
                 }
             } else {
                 List<Object> objects = new ArrayList<>();
-                Map map = (Map) arg.orElseGet(Collections::emptyMap);
+                Map map = (Map) optionalArg.orElseGet(Collections::emptyMap);
                 for (Parameter parameter : parameters) {
                     String name = toGraphqlName(parameter.getAnnotation(GraphQLName.class) != null ? parameter.getAnnotation(GraphQLName.class).value() : parameter.getName());
                     if (!map.containsKey(name)) {
                         objects.add(null);
                     } else {
-                        objects.add(buildArg(parameter.getParameterizedType(), ((GraphQLInputObjectType) graphQLType).getField(name).getType(), Optional.ofNullable(map.get(name))));
+                        objects.add(buildArg(parameter.getParameterizedType(), ((GraphQLInputObjectType) graphQLType).getField(name).getType(), map.get(name)));
                     }
                 }
                 return constructNewInstance(constructor, objects.toArray(new Object[objects.size()]));
             }
         } else if (p instanceof ParameterizedType && graphQLType instanceof GraphQLList) {
             if (((ParameterizedType) p).getRawType() == Optional.class) {
-                if (arg == null) {
+                if (!optionalArg.isPresent()) {
                     return null;
                 } else {
                     Type subType = ((ParameterizedType) p).getActualTypeArguments()[0];
@@ -178,8 +178,8 @@ public class MethodDataFetcher<T> implements DataFetcher<T> {
                 Type subType = ((ParameterizedType) p).getActualTypeArguments()[0];
                 GraphQLType wrappedType = ((GraphQLList) graphQLType).getWrappedType();
 
-                for (Object item : ((List) arg.orElseGet(Collections::emptyList))) {
-                    list.add(buildArg(subType, wrappedType, Optional.ofNullable(item)));
+                for (Object item : ((List) optionalArg.orElseGet(Collections::emptyList))) {
+                    list.add(buildArg(subType, wrappedType, item));
                 }
                 return list;
             }
@@ -191,7 +191,7 @@ public class MethodDataFetcher<T> implements DataFetcher<T> {
                 return Optional.ofNullable(buildArg(subType, new GraphQLUndefined(), arg));
             }
         } else {
-            return arg.orElse(null);
+            return optionalArg.orElse(null);
         }
     }
 

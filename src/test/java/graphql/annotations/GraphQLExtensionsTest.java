@@ -20,6 +20,7 @@ import graphql.annotations.annotationTypes.*;
 import graphql.annotations.processor.GraphQLAnnotations;
 import graphql.annotations.processor.exceptions.GraphQLAnnotationsException;
 import graphql.annotations.processor.retrievers.GraphQLObjectHandler;
+import graphql.com.google.common.collect.ImmutableList;
 import graphql.schema.*;
 import org.testng.annotations.Test;
 
@@ -30,8 +31,6 @@ import java.util.Map;
 import static graphql.Scalars.GraphQLString;
 import static graphql.annotations.AnnotationsSchemaCreator.newAnnotationsSchema;
 import static org.testng.Assert.*;
-
-import com.google.common.collect.ImmutableList;
 
 public class GraphQLExtensionsTest {
 

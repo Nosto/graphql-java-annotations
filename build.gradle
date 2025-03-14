@@ -24,6 +24,14 @@ apply plugin: 'biz.aQute.bnd.builder'
 apply plugin: 'maven-publish'
 
 
+// The upstream project build releases seem to be compiled with Java 11 so keeping compatibility so that our changes can be applied to the upstream project
+compileJava {
+    options.release = 11
+}
+compileTestJava {
+    options.release = 11
+}
+
 // custom tasks for creating source/javadoc jars
 tasks.register('sourcesJar', Jar) {
     dependsOn classes
@@ -143,7 +151,29 @@ publishing {
             }
         }
     }
+
+    repositories {
+        maven {
+            url 'https://repo.nos.to/content/repositories/NostoDependencies/'
+            credentials {
+                username = project.hasProperty('mavenUser') ? project.mavenUser : ""
+                password = project.hasProperty('mavenPassword') ? project.mavenPassword : ""
+            }
+        }
+    }
 }
+
+tasks.register('publishToNostoRepo') {
+    dependsOn 'publishMavenPublicationToMavenRepository'
+}
+gradle.taskGraph.whenReady { taskGraph ->
+    if (taskGraph.hasTask(':publishToNostoRepo')) {
+        if (!project.hasProperty('mavenUser') || !project.hasProperty('mavenPassword')) {
+            throw new GradleException("mavenUser and mavenPassword must be defined for publishToNostoRepo task")
+        }
+    }
+}
+
 
 afterReleaseBuild.dependsOn nexusPublishing
 
@@ -158,6 +188,7 @@ nexusPublishing {
 
 // to publish to local maven repo skip signing: ./gradlew publishToMavenLocal  -x signGraphqlJavaPublication
 signing {
+    required = { !version.endsWith("nosto") }
     def signingKey = System.getenv("MAVEN_CENTRAL_PGP_KEY")
     useInMemoryPgpKeys(signingKey, "")
     sign publishing.publications

@@ -156,8 +156,8 @@ publishing {
         maven {
             url 'https://repo.nos.to/content/repositories/NostoDependencies/'
             credentials {
-                username = "$mavenUser"
-                password = "$mavenPassword"
+                username = project.hasProperty('mavenUser') ? project.mavenUser : ""
+                password = project.hasProperty('mavenPassword') ? project.mavenPassword : ""
             }
         }
     }
@@ -166,6 +166,14 @@ publishing {
 tasks.register('publishToNostoRepo') {
     dependsOn 'publishMavenPublicationToMavenRepository'
 }
+gradle.taskGraph.whenReady { taskGraph ->
+    if (taskGraph.hasTask(':publishToNostoRepo')) {
+        if (!project.hasProperty('mavenUser') || !project.hasProperty('mavenPassword')) {
+            throw new GradleException("mavenUser and mavenPassword must be defined for publishToNostoRepo task")
+        }
+    }
+}
+
 
 afterReleaseBuild.dependsOn nexusPublishing
 

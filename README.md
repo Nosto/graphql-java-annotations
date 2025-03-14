@@ -1,3 +1,17 @@
+# Nosto Fork of GraphQL-Java Annotations adds support for partial updates and publishToNostoRepo gradle task for internal use
+
+Adds support for binding to `java.util.Optional` parameters. Binding to Optional parameters allows implementing partial updates. With a partial update the mutate call can update only some of the Optional fields without needing to repeat all the existing values of an object.
+
+The mapping from an optional field in GraphQL schema that binds to `java.util.Optional` is the following:
+1. value given to the field in GraphQL call is mapped into `java.util.Optional` of the underlying type
+2. null given to the field in GraphQL call is mapped into `Optional.empty` to signal the removal of a possibly existing value of the field
+3. field not included in the GraphQL call is mapped into null to signal `undefined` so any possibly existing value(s) should not be modified
+
+## Internal publishing to Nosto repository
+
+Update the version in the `gradle.properties` file and run `./gradlew publishToNostoRepo` to publish the library to the Nosto repository.
+
+
 ![logo](graphql-annotations.png?raw=true)
 # GraphQL-Java Annotations
 ![build](https://github.com/Enigmatis/graphql-java-annotations/actions/workflows/build.yml/badge.svg)

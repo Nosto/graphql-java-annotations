@@ -24,6 +24,14 @@ apply plugin: 'biz.aQute.bnd.builder'
 apply plugin: 'maven-publish'
 
 
+
+compileJava {
+    options.release = 11
+}
+compileTestJava {
+    options.release = 11
+}
+
 // custom tasks for creating source/javadoc jars
 tasks.register('sourcesJar', Jar) {
     dependsOn classes
@@ -143,6 +151,20 @@ publishing {
             }
         }
     }
+
+    repositories {
+        maven {
+            url 'https://repo.nos.to/content/repositories/NostoDependencies/'
+            credentials {
+                username = "$mavenUser"
+                password = "$mavenPassword"
+            }
+        }
+    }
+}
+
+tasks.register('publishToNostoRepo') {
+    dependsOn 'publishMavenPublicationToMavenRepository'
 }
 
 afterReleaseBuild.dependsOn nexusPublishing
@@ -158,6 +180,7 @@ nexusPublishing {
 
 // to publish to local maven repo skip signing: ./gradlew publishToMavenLocal  -x signGraphqlJavaPublication
 signing {
+    required = { !version.endsWith("nosto") }
     def signingKey = System.getenv("MAVEN_CENTRAL_PGP_KEY")
     useInMemoryPgpKeys(signingKey, "")
     sign publishing.publications

@@ -24,7 +24,7 @@ apply plugin: 'biz.aQute.bnd.builder'
 apply plugin: 'maven-publish'
 
 
-
+// The upstream project build releases seem to be compiled with Java 11 so keeping compatibility so that our changes can be applied to the upstream project
 compileJava {
     options.release = 11
 }

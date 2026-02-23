@@ -1,66 +1,23 @@
-import aQute.bnd.gradle.Bundle
-import io.github.gradlenexus.publishplugin.NexusRepository
-
-buildscript {
-    repositories {
-        mavenCentral()
-    }
-    dependencies {
-        classpath 'biz.aQute.bnd:biz.aQute.bnd.gradle:6.4.0'
-        classpath "org.jfrog.buildinfo:build-info-extractor-gradle:latest.release"
-    }
-}
 plugins {
-    id 'net.researchgate.release' version '3.0.2'
-    id 'com.github.hierynomus.license' version '0.16.1'
+    id 'java-library'
     id 'maven-publish'
-    id 'signing'
-    id "io.github.gradle-nexus.publish-plugin" version "1.3.0"
 }
-
-apply plugin: 'java'
-apply plugin: 'idea'
-apply plugin: 'biz.aQute.bnd.builder'
-apply plugin: 'maven-publish'
-
 
 // The upstream project build releases seem to be compiled with Java 11 so keeping compatibility so that our changes can be applied to the upstream project
-compileJava {
+tasks.named('compileJava', JavaCompile) {
     options.release = 11
 }
-compileTestJava {
+tasks.named('compileTestJava', JavaCompile) {
     options.release = 11
-}
-
-// custom tasks for creating source/javadoc jars
-tasks.register('sourcesJar', Jar) {
-    dependsOn classes
-    archiveClassifier = 'sources'
-    from sourceSets.main.allSource
-}
-
-tasks.register('javadocJar', Jar) {
-    dependsOn javadoc
-    archiveClassifier = 'javadoc'
-    from javadoc.destinationDir
-}
-
-release {
-    tagTemplate = 'v${version}'
-    failOnPublishNeeded = false
-    failOnCommitNeeded = false
 }
 
 repositories {
-    mavenCentral()
-}
-
-gradle.projectsEvaluated {
-    tasks.withType(JavaCompile).tap {
-        configureEach {
-            doLast {
-                options.compilerArgs += "-parameters"
-            }
+    maven {
+        name = 'codeartifact'
+        url = uri("$mavenUrl")
+        credentials {
+            username = "$mavenUser"
+            password = "$mavenPassword"
         }
     }
 }
@@ -82,7 +39,9 @@ dependencies {
     testImplementation 'org.mockito:mockito-core:2.+'
 }
 
-test.useTestNG()
+tasks.named('test') {
+    useTestNG()
+}
 
 publishing {
     publications {
@@ -91,9 +50,6 @@ publishing {
             groupId 'io.github.graphql-java'
             artifactId project.name
             version project.version
-
-            artifact sourcesJar
-            artifact javadocJar
 
             pom.withXml {
                 asNode().children().last() + {
@@ -154,48 +110,14 @@ publishing {
 
     repositories {
         maven {
-            url 'https://repo.nos.to/content/repositories/NostoDependencies/'
+            name = 'codeartifact'
+            url = uri("$mavenUrl")
             credentials {
-                username = project.hasProperty('mavenUser') ? project.mavenUser : ""
-                password = project.hasProperty('mavenPassword') ? project.mavenPassword : ""
+                username = "$mavenUser"
+                password = "$mavenPassword"
             }
         }
     }
-}
-
-tasks.register('publishToNostoRepo') {
-    dependsOn 'publishMavenPublicationToMavenRepository'
-}
-gradle.taskGraph.whenReady { taskGraph ->
-    if (taskGraph.hasTask(':publishToNostoRepo')) {
-        if (!project.hasProperty('mavenUser') || !project.hasProperty('mavenPassword')) {
-            throw new GradleException("mavenUser and mavenPassword must be defined for publishToNostoRepo task")
-        }
-    }
-}
-
-
-afterReleaseBuild.dependsOn nexusPublishing
-
-nexusPublishing {
-    repositories {
-        sonatype {
-            username = System.getenv("MAVEN_CENTRAL_USERTOKEN_USERNAME")
-            password = System.getenv("MAVEN_CENTRAL_USERTOKEN_PASSWORD")
-        }
-    }
-}
-
-// to publish to local maven repo skip signing: ./gradlew publishToMavenLocal  -x signGraphqlJavaPublication
-signing {
-    required = { !version.endsWith("nosto") }
-    def signingKey = System.getenv("MAVEN_CENTRAL_PGP_KEY")
-    useInMemoryPgpKeys(signingKey, "")
-    sign publishing.publications
-}
-
-tasks.register('bundle', Bundle) {
-    from sourceSets.main.output
 }
 
 wrapper {

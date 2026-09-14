@@ -25,7 +25,6 @@ import graphql.schema.GraphQLSchema;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -138,10 +137,10 @@ public class GraphQLIterableAndArrayTest {
     }
 
     private Object getQueryResultAtIndex(ExecutionResult result, String queryName, int index) {
-        return ((ArrayList) (((LinkedHashMap) result.getData()).get(queryName))).get(index);
+        return ((List) (((LinkedHashMap) result.getData()).get(queryName))).get(index);
     }
 
     private Object getQueryResultAtCell(ExecutionResult result, String queryName, int rowIndex, int columnIndex) {
-        return (((ArrayList) (getQueryResultAtIndex(result, queryName, rowIndex))).get(columnIndex));
+        return (((List) (getQueryResultAtIndex(result, queryName, rowIndex))).get(columnIndex));
     }
 }

@@ -135,7 +135,7 @@ public class DirectivesBuilder implements Builder<GraphQLDirective[]> {
                     Object value;
                     if ( graphQLArgument.getType() instanceof GraphQLScalarType )
                     {
-                        value = ((GraphQLScalarType) graphQLArgument.getType()).getCoercing().parseValue(argumentValue);
+                        value = ((GraphQLScalarType) graphQLArgument.getType()).getCoercing().serialize(argumentValue);
                     }
                     else
                     {
@@ -161,7 +161,7 @@ public class DirectivesBuilder implements Builder<GraphQLDirective[]> {
             if (graphQLArgument.getType() instanceof GraphQLScalarType) {
 
                 try {
-                    Object value = ((GraphQLScalarType) graphQLArgument.getType()).getCoercing().parseValue(argumentValue);
+                    Object value = ((GraphQLScalarType) graphQLArgument.getType()).getCoercing().serialize(argumentValue);
                     builder.value( value );
                 } catch (Exception e) {
                     throw new GraphQLAnnotationsException(COULD_NOT_PARSE_ARGUMENT_VALUE_TO_ARGUMENT_TYPE, e);

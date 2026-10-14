@@ -20,8 +20,8 @@ import graphql.annotations.processor.GraphQLAnnotations;
 import graphql.annotations.processor.typeFunctions.TypeFunction;
 import graphql.relay.Relay;
 import graphql.schema.GraphQLDirective;
+import graphql.schema.GraphQLNamedType;
 import graphql.schema.GraphQLSchema;
-import graphql.schema.GraphQLType;
 import graphql.schema.SchemaTransformer;
 
 import java.util.*;
@@ -247,9 +247,9 @@ public class AnnotationsSchemaCreator {
             Set<GraphQLDirective> directives = directivesObjectList.stream().map(dir -> graphQLAnnotations.directive(dir)).collect(Collectors.toSet());
             directiveContainerClasses.forEach(dir -> directives.addAll(graphQLAnnotations.directives(dir)));
 
-            Set<GraphQLType> additionalTypes = additionalTypesList.stream().map(additionalType ->
-                    additionalType.isInterface() ?
-                            graphQLAnnotations.generateInterface(additionalType) : graphQLAnnotations.object(additionalType)).collect(Collectors.toSet());
+            Set<GraphQLNamedType> additionalTypes = additionalTypesList.stream().map(additionalType ->
+                    (GraphQLNamedType) (additionalType.isInterface() ?
+                            graphQLAnnotations.generateInterface(additionalType) : graphQLAnnotations.object(additionalType))).collect(Collectors.toSet());
 
             this.graphqlSchemaBuilder.query(graphQLAnnotations.object(queryObject));
             if (this.mutationObject != null) {

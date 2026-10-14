@@ -17,6 +17,7 @@ package graphql.annotations.strategies;
 import graphql.execution.*;
 import graphql.language.*;
 import graphql.schema.GraphQLEnumType;
+import graphql.schema.GraphQLType;
 
 import java.util.HashMap;
 import java.util.Optional;
@@ -27,7 +28,7 @@ public class EnhancedExecutionStrategy extends AsyncSerialExecutionStrategy {
 
     @Override
     protected FieldValueInfo completeValue(ExecutionContext executionContext, ExecutionStrategyParameters parameters) throws NonNullableFieldWasNullException {
-        graphql.schema.GraphQLType fieldType = parameters.getExecutionStepInfo().getType();
+        GraphQLType fieldType = parameters.getExecutionStepInfo().getType();
 
         if (parameters.getExecutionStepInfo().getFieldDefinition().getName().contentEquals(CLIENT_MUTATION_ID)) {
             Field field = (Field) executionContext.getOperationDefinition().getSelectionSet().getSelections().get(0);

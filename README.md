@@ -9,7 +9,15 @@ The mapping from an optional field in GraphQL schema that binds to `java.util.Op
 
 ## Internal publishing to Nosto repository
 
-Update the version in the `gradle.properties` file and run `./gradlew publishToNostoRepo` to publish the library to the Nosto repository.
+Releases are published to Nosto's AWS CodeArtifact `java` repository.
+
+1. Update the version in the `gradle.properties` file. Keep the `-nosto` suffix: signing is only skipped for `-nosto` versions.
+2. Run the [Publish](.github/workflows/publish.yml) workflow from the Actions tab, or publish locally:
+
+```
+export CODEARTIFACT_AUTH_TOKEN=$(aws codeartifact get-authorization-token --domain nosto --domain-owner 673366506863 --region us-east-1 --query authorizationToken --output text)
+./gradlew publishToNostoRepo
+```
 
 
 ![logo](graphql-annotations.png?raw=true)

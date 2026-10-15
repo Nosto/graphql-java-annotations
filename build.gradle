@@ -1,5 +1,4 @@
 import aQute.bnd.gradle.Bundle
-import io.github.gradlenexus.publishplugin.NexusRepository
 
 buildscript {
     repositories {
@@ -15,7 +14,6 @@ plugins {
     id 'com.github.hierynomus.license' version '0.16.1'
     id 'maven-publish'
     id 'signing'
-    id "io.github.gradle-nexus.publish-plugin" version "1.3.0"
 }
 
 apply plugin: 'java'
@@ -154,37 +152,27 @@ publishing {
 
     repositories {
         maven {
-            url 'https://repo.nos.to/content/repositories/NostoDependencies/'
+            name = "codeartifact"
+            url = uri("https://nosto-673366506863.d.codeartifact.us-east-1.amazonaws.com/maven/java/")
             credentials {
-                username = project.hasProperty('mavenUser') ? project.mavenUser : ""
-                password = project.hasProperty('mavenPassword') ? project.mavenPassword : ""
+                username = "aws"
+                password = System.getenv("CODEARTIFACT_AUTH_TOKEN")
             }
         }
     }
 }
 
 tasks.register('publishToNostoRepo') {
-    dependsOn 'publishMavenPublicationToMavenRepository'
+    dependsOn 'publishMavenPublicationToCodeartifactRepository'
 }
 gradle.taskGraph.whenReady { taskGraph ->
     if (taskGraph.hasTask(':publishToNostoRepo')) {
-        if (!project.hasProperty('mavenUser') || !project.hasProperty('mavenPassword')) {
-            throw new GradleException("mavenUser and mavenPassword must be defined for publishToNostoRepo task")
+        if (!System.getenv("CODEARTIFACT_AUTH_TOKEN")) {
+            throw new GradleException("CODEARTIFACT_AUTH_TOKEN must be set for publishToNostoRepo task")
         }
     }
 }
 
-
-afterReleaseBuild.dependsOn nexusPublishing
-
-nexusPublishing {
-    repositories {
-        sonatype {
-            username = System.getenv("MAVEN_CENTRAL_USERTOKEN_USERNAME")
-            password = System.getenv("MAVEN_CENTRAL_USERTOKEN_PASSWORD")
-        }
-    }
-}
 
 // to publish to local maven repo skip signing: ./gradlew publishToMavenLocal  -x signGraphqlJavaPublication
 signing {

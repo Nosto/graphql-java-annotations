@@ -1,24 +1,15 @@
-# Nosto Fork of GraphQL-Java Annotations adds support for partial updates and publishToNostoRepo gradle task for internal use
+# Nosto fork of GraphQL-Java Annotations
 
-Adds support for binding to `java.util.Optional` parameters. Binding to Optional parameters allows implementing partial updates. With a partial update the mutate call can update only some of the Optional fields without needing to repeat all the existing values of an object.
+This fork tracks [upstream](https://github.com/Enigmatis/graphql-java-annotations) with compatibility changes for GraphQL Java 26.1. Partial-update support is now included upstream.
 
-The mapping from an optional field in GraphQL schema that binds to `java.util.Optional` is the following:
-1. value given to the field in GraphQL call is mapped into `java.util.Optional` of the underlying type
-2. null given to the field in GraphQL call is mapped into `Optional.empty` to signal the removal of a possibly existing value of the field
-3. field not included in the GraphQL call is mapped into null to signal `undefined` so any possibly existing value(s) should not be modified
-
-## Internal publishing to Nosto repository
-
-Update the version in the `gradle.properties` file and run `./gradlew publishToNostoRepo` to publish the library to the Nosto repository.
-
+Nosto releases are built and published through the private [dependency-builds repository](https://github.com/Nosto/dependency-builds).
 
 ![logo](graphql-annotations.png?raw=true)
 # GraphQL-Java Annotations
 ![build](https://github.com/Enigmatis/graphql-java-annotations/actions/workflows/build.yml/badge.svg)
 [![Maven Central](https://img.shields.io/maven-central/v/io.github.graphql-java/graphql-java-annotations.svg?maxAge=3000)]()
 
-[GraphQL-Java](https://github.com/graphql-java/graphql-java) is a great library, but its syntax is a little bit verbose. This library offers an annotations-based
-syntax for GraphQL schema definition.
+[GraphQL-Java](https://github.com/graphql-java/graphql-java) is a great library, but its syntax is a little bit verbose. This library offers an annotations-based syntax for GraphQL schema definition.
 
 If you would like to use a tool that creates a graphql spring boot server using graphql-java-annotations, you can view the [graphql-spring-annotations](https://github.com/yarinvak/graphql-spring-annotations) library.
 
@@ -43,6 +34,7 @@ If you would like to use a tool that creates a graphql spring boot server using 
     - [Mutations](#mutations)
     - [Connection](#connection)
     - [Customizing Relay Schema](#customizing-relay-schema)     
+- [Community and Governance](#community-and-governance)
 
 ## Getting Started
 
@@ -51,7 +43,7 @@ If you would like to use a tool that creates a graphql spring boot server using 
 
 ```groovy
 dependencies {
-  compile "io.github.graphql-java:graphql-java-annotations:21.5"
+  compile "io.github.graphql-java:graphql-java-annotations:24.3"
 }
 ```
 
@@ -61,7 +53,7 @@ dependencies {
 <dependency>
     <groupId>io.github.graphql-java</groupId>
     <artifactId>graphql-java-annotations</artifactId>
-    <version>21.5</version>
+    <version>24.3</version>
 </dependency>
 ```
 
@@ -634,3 +626,13 @@ It has 2 methods:
 
 For you convenience, there are two classes that you can use: `AbstractSimplePaginatedData` and `SimplePaginatedDataImpl`
 For examples, look at the tests
+
+
+## Community and Governance
+
+We are community-driven and operate in a low-maintenance mode. If you’d like to get involved or understand how decisions are made:
+
+- Contributing guide: see CONTRIBUTING.md
+- Governance: see GOVERNANCE.md
+- Code of Conduct: see CODE_OF_CONDUCT.md
+- Security: to report vulnerabilities, see SECURITY.md

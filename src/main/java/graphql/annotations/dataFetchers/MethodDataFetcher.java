@@ -119,7 +119,7 @@ public class MethodDataFetcher<T> implements DataFetcher<T> {
         if (arg == null) {
             // for Optional parameters null should be returned as Optional.empty() to show a request for a null value
             // and not including the parameter in the query at all should be returned as null to show "undefined" value / not set
-            if ((p instanceof ParameterizedType && ((ParameterizedType) p).getRawType() == Optional.class)) {
+              if (p instanceof ParameterizedType && ((ParameterizedType) p).getRawType() == Optional.class) {
                 return Optional.empty();
             }
             return null;
@@ -165,8 +165,8 @@ public class MethodDataFetcher<T> implements DataFetcher<T> {
             Type subType = ((ParameterizedType) p).getActualTypeArguments()[0];
             Object val = buildArg(subType, graphQLType, arg);
             // add Optional wrapper if needed
-            if (val != null && ((ParameterizedType) p).getRawType() == Optional.class) {
-                return Optional.of(val);
+            if (((ParameterizedType) p).getRawType() == Optional.class) {
+                return Optional.ofNullable(val);
             }
             return val;
         } else {

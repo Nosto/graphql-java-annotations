@@ -14,10 +14,12 @@
  */
 package graphql.annotations.strategies;
 
+import graphql.ExecutionResult;
 import graphql.execution.*;
 import graphql.language.*;
 import graphql.schema.GraphQLEnumType;
-import graphql.schema.GraphQLType;
+import graphql.schema.GraphQLFieldDefinition;
+import graphql.schema.GraphQLObjectType;
 
 import java.util.HashMap;
 import java.util.Optional;
@@ -28,7 +30,7 @@ public class EnhancedExecutionStrategy extends AsyncSerialExecutionStrategy {
 
     @Override
     protected FieldValueInfo completeValue(ExecutionContext executionContext, ExecutionStrategyParameters parameters) throws NonNullableFieldWasNullException {
-        GraphQLType fieldType = parameters.getExecutionStepInfo().getType();
+        graphql.schema.GraphQLType fieldType = parameters.getExecutionStepInfo().getType();
 
         if (parameters.getExecutionStepInfo().getFieldDefinition().getName().contentEquals(CLIENT_MUTATION_ID)) {
             Field field = (Field) executionContext.getOperationDefinition().getSelectionSet().getSelections().get(0);
@@ -42,8 +44,8 @@ public class EnhancedExecutionStrategy extends AsyncSerialExecutionStrategy {
             } else {
                 ObjectValue value = (ObjectValue) field.getArguments().get(0).getValue();
                 StringValue clientMutationIdVal = (StringValue) value.getObjectFields().stream()
-                        .filter(f -> f.getName().contentEquals(CLIENT_MUTATION_ID))
-                        .findFirst().get().getValue();
+                    .filter(f -> f.getName().contentEquals(CLIENT_MUTATION_ID))
+                    .findFirst().get().getValue();
                 clientMutationId = clientMutationIdVal.getValue();
             }
             return super.completeValue(executionContext, withSource(parameters, clientMutationId));
